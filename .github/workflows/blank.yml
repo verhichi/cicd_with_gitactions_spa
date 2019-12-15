@@ -9,7 +9,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
-      run: npm ci && npm run build
+    - name: install dependencies
+      run: npm ci
+    - name: build
+      run:  npm run build
+    - name: ssh key generate
+      run: echo "$SSH_PRIVATE_KEY" > key && chmod 600 key
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: rsync deploy
+      run: rsync -rptgDvz --delete -e "ssh -i key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" /home/runner/work/cicd_with_gitactions_spa/cicd_with_gitactions_spa/dist/ verhichi@35.221.79.212:/home/verhichi/web
